@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load webApp_tags %}
+{%block title%}Ministry of Supply|Checkout {% endblock %}
+{% block body %}
+<style>
+  .hidden {
+    display: none;
+}
+</style>
+<div class="row">
+  <script src="https://js.stripe.com/v3/"></script>
+<div class="col-lg-6">
+    <div class="container ms-5 me-5 pe-5 mt-5">
+
+        <form id="form" class="row g-3">
+         
+            <p style="font-size:20px ;"><strong>Shipping Information</strong></p>
+            <hr>
+            <div id="user-info">
+            <div class="col-md-12">
+                <label for="inputName" class="form-label"><strong>Full Name</strong></label>
+                <input type="text" class="form-control" id="inputName" required name="name">
+              </div>
+            <div class="col-md-12">
+                <label for="inputEmail" class="form-label"><strong>Email</strong></label>
+                <input type="email" class="form-control" id="inputEmail" required name="email">
+              </div>
+              <hr>
+            </div>
+            <div class="col-12">
+              <label for="inputAddress" class="form-label"><strong>Address</strong></label>
+              <input type="text" class="form-control" id="inputAddress" placeholder="Enter your address" name="address" required >
+            </div>
+
+            <div class="col-md-4">
+              <label for="inputCity" class="form-label"><strong>City</strong></label>
+              <input type="text" class="form-control" id="inputCity" name="city" placeholder="city">
+            </div>
+            <div class="col-md-4">
+              <label for="inputState" class="form-label"><strong>State</strong></label>
+              <input type="text" class="form-control" id="inputCity" name="state" placeholder="state">
+            </div>
+            <div class="col-md-4">
+              <label for="inputZip" class="form-label"><strong>Zip</strong></label>
+              <input type="text" class="form-control" id="inputZip" name="zipcode" placeholder="zipcode">
+            </div>
+            <div class="col-12">
+              <input id="form-button" type="submit" value="submit" class="btn btn-success btn-block">
+            </div>
+          </form>
+    </div>
+  <hr>
+    <div class=" container hidden" id="payment-info">
+        <small><strong>Select from Payment Options:</strong></small><hr>
+        <button onclick="submitFormData()" id= "make-payment" class="btn btn-info">Cash On Delivery </button><hr>
+
+    </div>
+
+</div>
+<div class="col-lg-6">
+    <div class="container mt-5 me-5 pe-5">
+        <p style="font-size:20px" ><strong>Order Summary</strong></p>
+        <hr>
+        <div class="container me-5">
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Image</th>
+                    <th scope="col"><strong>Item</strong></th>
+                    <th scope="col"><strong>Price</strong></th>
+                    <th scope="col"><strong>Quantity</strong></th>
+                    <th scope="col"><strong>Total</strong></th>
+                  </tr>
+                </thead>
+                <tbody>
+
+                {% for item in order_items%}
+                  <tr>
+                    <td><img style="height:100px" src= {% get_image item.product %}></td>
+                    <td>{{item.product.name}}</td>
+                    <td>${{item.product.price}}</td>
+                    <td>x{{item.quantity}}
+                     
+                    </td>
+                    <td>${{item.get_total}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+       </div>
+        <h5>Items:  {{order.get_cart_items}}</h5>
+        <h5>Total:  ${{order.get_cart_total}}</h5>
+        <hr>
+        <a class="btn btn-outline-dark" href="{% url 'cart' %}"> &#x2190; Back to cart</a>
+    </div>
+    
+    </div>
+ </div>
+</div>
+
+<script type="text/javascript"> 
+  var total = '{{order.get_cart_total}}'
+ 
+     if(user != 'AnonymousUser'){
+         document.getElementById('user-info').innerHTML = ''
+     }
+     var form = document.getElementById('form')
+     form.addEventListener('submit', function(e){
+         e.preventDefault()
+         document.getElementById('form-button').classList.add('hidden')
+         document.getElementById('payment-info').classList.remove('hidden')
+     })
+ 
+   function UserFormData(){
+     var userFormData = {
+       'name': null,
+       'email': null,
+       'total': total,
+     }
+     if(user == 'AnonymousUser'){
+       userFormData.name = form.name.value
+       userFormData.email = form.email.value
+     }
+     return userFormData
+   }
+ 
+ function ShippingFormData(){
+   var shippingFormData = {
+     'address': form.address.value,
+       'city': form.city.value,
+       'state': form.state.value,
+       'zipcode':  form.zipcode.value, 
+     }
+     return ShippingFormData
+   }
+ 
+   
+ var stripe = Stripe("{{STRIPE_PUBLIC_KEY}}");
+ function onlinePayment(){
+     userFormData = UserFormData()
+     shippingFormData = ShippingFormData()
+ 
+         fetch( "{% url 'payment' order.id %}" ,{
+           method: 'POST',
+           headers: {
+             'X-CSRFToken': csrftoken,
+         },
+         body: JSON.stringify({'user_form': userFormData, 'shipping_form': shippingFormData}) 
+       })
+      
+       .then(function (response){
+           return response.json();
+       })
+       .then(function (session){
+         return stripe.redirectToCheckout({sessionId: session.id});
+     })
+    
+ }
+     function submitFormData(){
+         userFormData = UserFormData()
+         shippingFormData = ShippingFormData()
+         fetch( "{% url 'process_order' order.id %}" ,{
+             method: 'POST',
+             headers: {
+                 'Content-Type': 'application/json', 
+                 'X-CSRFToken': csrftoken,
+             },
+             body: JSON.stringify({'user_form': userFormData, 'shipping_form': shippingFormData})    
+         })
+     
+         .then((response) =>{
+             return response.json()
+         })
+     
+         .then((data) =>{
+             alert('Transaction Completed');
+             cart = {}
+             document.cookie = 'cart=' + JSON.stringify(cart) + ";domain=;path=/"
+             window.location.href = "{% url 'index' %}"
+     })
+ } 
+ 
+  </script> 
+{% endblock body %}

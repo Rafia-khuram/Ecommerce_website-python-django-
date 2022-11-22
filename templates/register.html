@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block body %}
+
+   <div class="container">
+            <div class="col-lg-6 col-md-3">
+               <div class="container pe-5 pt-5">
+                    <h2>Sign-up Here!</h2> 
+                    <form method = "POST" action="">
+                        {% csrf_token %}
+                        <div class="card card me-5 pe-5">
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <label for="Name">Name:</label><br>
+                                    {{form.username}}
+                                </div>
+                                <div class="mb-2">
+                                    <label for="Email">Email:</label><br>
+                                    {{form.email}}
+                                </div>
+                                <div class="mb-2">
+                                    <label for="password1">Password:</label><br>
+                                    {{form.password1}}
+                                </div>
+                                <div class="mb-2">
+                                    <label for="password2"> Confirm Password:</label>
+                                    {{form.password2}}
+                                </div>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </div>
+                    </form>
+            </div>
+            {{form.errors}}
+            <p class="small fw-bold mt-2 pt-1 mb-0">Already have an account? <a href="{% url 'login_user' %}" class="link-danger">Login</a></p>
+                    
+            </div>
+        </div>
+    <script>
+
+    var form_fields = document.getElementsByTagName('input')
+    form_fields[1].placeholder='Username';
+    form_fields[2].placeholder='Email';
+    form_fields[3].placeholder='Enter password';
+    form_fields[4].placeholder='Re-enter password';
+
+
+    for (var field in form_fields){	
+    form_fields[field].className += ' form-control'
+    }
+</script>
+{% endblock body %}

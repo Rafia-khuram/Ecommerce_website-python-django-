@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load webApp_tags %}
+{%block title%}Ministry of Supply {% endblock %}
+
+{% block body %}
+ <div class= "container">
+<div class="row">
+    <div class="col-lg-8 col-md-8 mt-5">
+        <div class= "row">
+        {% for image in images%}
+        <div class="col-lg-5 col-md-5 ms-1 me-1 mb-3">
+            <div class="card">
+                <img class="card-img-top" style="height:300px;" src= {{image.image}}alt="Card image" >
+            </div>
+        </div>
+        {%endfor%}
+    </div>
+        </div>
+    <div class="col-lg-4 col-md-4 mt-5">
+        <div class="container-fluid ps-0 me-5 mt-2">
+            <h4 class="card-title" >{{product.name}}</h5>
+            <h5 style="color:grey; font-size: small;">{{product.description}}</h5>
+            <h5 style="font-size: small;">Price: ${{product.price}}</h5>
+        </div>
+
+        <div class="container-fluid ps-0 me-5 mt-3">
+            <h5 style="font-size: small;">Color: {{product.color}}</h5>
+            <br>
+            <h5 style="font-size: medium;">Available Sizes</h5>
+            <select class= "btn btn-primary dropdown-toggle" style="width:300px ;" id="{{ sku.id }}" name="{{ sku.color }}" 
+            {% for sku in skus %}
+            {%if sku.out_of_stock %}
+                <option value="{{sku.size}}" selected="selected"> Size: {{sku.size}}
+                </option>
+            {%endif%}
+            {% endfor %}
+
+            </select>
+            <div class="container-fluid ps-0 mt-4">
+                <button data-product="{{product.id}}" data-action="add" style="width:300px" class="btn btn-success update-cart">Add to Cart</button>
+            </div>
+
+        <div class="mt-5">
+            <h5 class="card-title" >Care</h5>
+            {% for care in care %}
+                <h5 style="color:grey; font-size: small;">{{care.care}}</h5>
+            {% endfor %}
+
+            <h5 class="card-title mt-5" >Returns and Payments</h5>
+                <h5 style="color:grey; font-size: small;"> Flat-rate International Shipping & Returns*</h5>
+                <h5 style="color:grey; font-size: small;"> Multiple payment options available:</h5>
+                <br>
+                <h5 style="color:grey; font-size: small;"> --Express: Apple, Google, Paypal, Amazon</h5>
+                <h5 style="color:grey; font-size: small;"> --Shopify: Shop Pay, Shop Pay Installments</h5>
+                <h5 style="color:grey; font-size: small;"> Unless otherwise noted.</h5>
+        
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock body %}
